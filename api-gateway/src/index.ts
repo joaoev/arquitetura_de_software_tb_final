@@ -15,6 +15,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'SUA_SECRET';
 
 const SERVICE_REGISTRY = {
     AUTH_SERVICE: 'http://localhost:3001',
+    CATALOG_SERVICE: 'http://localhost:3002',
 };
 
 
@@ -52,6 +53,33 @@ const securityMiddleware = (requiredRole?: string) => {
     };
 };
 
+const adminOrTeacherMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ message: 'API Gateway: Credenciais não fornecidas.' });
+    }
+
+    try {
+        const decoded: any = jwt.verify(token, JWT_SECRET);
+        
+        if (decoded.role !== 'ADMIN' && decoded.role !== 'TEACHER') {
+            return res.status(403).json({ 
+                message: `API Gateway: O papel '${decoded.role}' não tem permissão para esta operação. Apenas ADMIN e TEACHER podem acessar.` 
+            });
+        }
+
+        req.headers['x-user-id'] = decoded.sub || decoded.id;
+        req.headers['x-user-role'] = decoded.role;
+
+        next();
+    } catch (error) {
+        console.log('Token inválido:', error);
+        return res.status(403).json({ message: 'API Gateway: Token rejeitado.' });
+    }
+};
+
 // Protege rota específica que requer ADMIN antes do proxy genérico
 app.use('/auth/sign-up/teacher', securityMiddleware('ADMIN'));
 
@@ -59,6 +87,12 @@ app.use('/auth', createProxyMiddleware({
     target: SERVICE_REGISTRY.AUTH_SERVICE,
     changeOrigin: true,
     pathRewrite: { '^/auth': '' },
+}));
+
+// Rotas do catálogo (todas públicas)
+app.use('/courses', createProxyMiddleware({
+    target: SERVICE_REGISTRY.CATALOG_SERVICE,
+    changeOrigin: true,
 }));
 
 
