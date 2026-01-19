@@ -14,12 +14,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'SUA_SECRET';
 
 
 const SERVICE_REGISTRY = {
-    AUTH_SERVICE: 'http://localhost:3001',
+    AUTH_SERVICE: 'http://localhost:3001/',
     CATALOG_SERVICE: 'http://localhost:3002/courses',
     CONTENT_SERVICE: 'http://localhost:3003/lessons',
     CONTENT_SERVICE_LIVE_SESSIONS: 'http://localhost:3003/live-sessions',
     ENROLLMENT_SERVICE: 'http://localhost:3004/enrollments',
     ACTIVITIES_SERVICE: 'http://localhost:3005',
+    ACTIVITIES_ASSESSMENTS_SERVICE: 'http://localhost:3005/assessments',
+    ACTIVITIES_QUESTIONS_SERVICE: 'http://localhost:3005/questions',
+    ACTIVITIES_FORUMS_SERVICE: 'http://localhost:3005/forums',
+    ACTIVITIES_TOPICS_SERVICE: 'http://localhost:3005/topics',
+    ACTIVITIES_POSTS_SERVICE: 'http://localhost:3005/posts',
+    ACTIVITIES_PRIVATE_MESSAGES_SERVICE: 'http://localhost:3005/private-messages',
+    ACTIVITIES_SUBMISSIONS_SERVICE: 'http://localhost:3005/submissions',
 };
 
 
@@ -84,10 +91,6 @@ const adminOrTeacherMiddleware = (req: Request, res: Response, next: NextFunctio
 };
 
 
-// Todas as rotas agora começam com /api/v1/
-app.use('/api/v1/auth/sign-up/teacher', securityMiddleware('ADMIN'));
-
-
 // Todas as rotas agora começam com /api/v1/ e o pathRewrite remove apenas o prefixo /api/v1
 const pathRewriteApiV1 = { '^/api/v1': '' };
 
@@ -96,7 +99,7 @@ app.use('/api/v1/auth/sign-up/teacher', securityMiddleware('ADMIN'));
 app.use('/api/v1/auth', createProxyMiddleware({
     target: SERVICE_REGISTRY.AUTH_SERVICE,
     changeOrigin: true,
-    pathRewrite: pathRewriteApiV1,
+    pathRewrite: {'^/api/v1/auth': ''},
 }));
 
 app.use('/api/v1/courses', adminOrTeacherMiddleware, createProxyMiddleware({
@@ -135,44 +138,46 @@ app.use('/api/v1/access-history',  createProxyMiddleware({
     pathRewrite: pathRewriteApiV1,
 }));
 
+
+// Atividades: cada rota para seu respectivo endpoint
 app.use('/api/v1/forums', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_FORUMS_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
 app.use('/api/v1/topics', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_TOPICS_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
 app.use('/api/v1/posts', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_POSTS_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
 app.use('/api/v1/private-messages', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_PRIVATE_MESSAGES_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
 app.use('/api/v1/assessments', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_ASSESSMENTS_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
 app.use('/api/v1/questions', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_QUESTIONS_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
 app.use('/api/v1/submissions', createProxyMiddleware({
-    target: SERVICE_REGISTRY.ACTIVITIES_SERVICE,
+    target: SERVICE_REGISTRY.ACTIVITIES_SUBMISSIONS_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
