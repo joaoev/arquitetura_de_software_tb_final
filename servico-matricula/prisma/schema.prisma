@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PENDING
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model Enrollment {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @db.Uuid
+  courseId    String          @db.Uuid
+  status      EnrollmentStatus @default(PENDING)
+  enrolledAt  DateTime        @default(now())
+  expiresAt   DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  payment     Payment?
+  accessHistory AccessHistory[]
+
+  @@map("enrollments")
+}
+
+model Payment {
+  id           String        @id @default(uuid()) @db.Uuid
+  enrollmentId String        @unique @db.Uuid
+  amount       Float
+  status       PaymentStatus @default(PENDING)
+  paymentMethod String?      // Exemplo: "credit_card", "pix", "boleto"
+  transactionId String?      // ID da transação (simulado)
+  paidAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  enrollment   Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model AccessHistory {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  enrollmentId  String   @db.Uuid
+  lessonId      String?  @db.Uuid  // ID da aula (pode ser null se for live session)
+  liveSessionId String?  @db.Uuid  // ID da sessão ao vivo (pode ser null se for lesson)
+  accessedAt    DateTime @default(now())
+  enrollment    Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@map("access_history")
+}
+
