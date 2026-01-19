@@ -16,8 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'SUA_SECRET';
 const SERVICE_REGISTRY = {
     AUTH_SERVICE: 'http://localhost:3001',
     CATALOG_SERVICE: 'http://localhost:3002/courses',
-    CONTENT_SERVICE: 'http://localhost:3003/live-sessions',
-    CONTENT_LESSONS_SERVICE: 'http://localhost:3003/lessons',
+    CONTENT_SERVICE: 'http://localhost:3003',
     ENROLLMENT_SERVICE: 'http://localhost:3004',
     ACTIVITIES_SERVICE: 'http://localhost:3005',
 };
@@ -112,7 +111,7 @@ app.use('/api/v1/courses', adminOrTeacherMiddleware, (req, res, next) => {
 }));
 
 app.use('/api/v1/lessons', createProxyMiddleware({
-    target: SERVICE_REGISTRY.CONTENT_LESSONS_SERVICE,
+    target: SERVICE_REGISTRY.CONTENT_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
