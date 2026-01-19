@@ -1,6 +1,7 @@
-# Edu Connect - Arquitetura de Software
 
-Este projeto é uma aplicação baseada em microserviços, composta por um **API Gateway** e um **Serviço de Autenticação**, utilizando Docker para o banco de dados PostgreSQL.
+# Edu Connect - Arquitetura de Software (SOA)
+
+Este projeto utiliza a arquitetura **SOA (Service-Oriented Architecture)**, sendo composto por serviços independentes, incluindo um **API Gateway** e um **Serviço de Autenticação**.
 
 ## 📋 Pré-requisitos
 

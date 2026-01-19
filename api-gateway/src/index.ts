@@ -16,8 +16,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'SUA_SECRET';
 const SERVICE_REGISTRY = {
     AUTH_SERVICE: 'http://localhost:3001',
     CATALOG_SERVICE: 'http://localhost:3002/courses',
-    CONTENT_SERVICE: 'http://localhost:3003',
-    ENROLLMENT_SERVICE: 'http://localhost:3004',
+    CONTENT_SERVICE: 'http://localhost:3003/lessons',
+    CONTENT_SERVICE_LIVE_SESSIONS: 'http://localhost:3003/live-sessions',
+    ENROLLMENT_SERVICE: 'http://localhost:3004/enrollments',
     ACTIVITIES_SERVICE: 'http://localhost:3005',
 };
 
@@ -36,7 +37,6 @@ const securityMiddleware = (requiredRole?: string) => {
         try {
             const decoded: any = jwt.verify(token, JWT_SECRET);
 
-            console.log('Token decodificado:', decoded);
         
             if (requiredRole && decoded.role !== requiredRole) {
                 return res.status(403).json({ 
@@ -67,7 +67,6 @@ const adminOrTeacherMiddleware = (req: Request, res: Response, next: NextFunctio
     try {
         const decoded: any = jwt.verify(token, JWT_SECRET);
         
-        console.log('Token decodificado:', decoded);
         if (decoded.role !== 'ADMIN' && decoded.role !== 'TEACHER') {
             return res.status(403).json({ 
                 message: `API Gateway: O papel '${decoded.role}' não tem permissão para esta operação. Apenas ADMIN e TEACHER podem acessar.` 
@@ -77,7 +76,6 @@ const adminOrTeacherMiddleware = (req: Request, res: Response, next: NextFunctio
         req.headers['x-user-id'] = decoded.sub || decoded.id;
         req.headers['x-user-role'] = decoded.role;
 
-        console.log('Permissão concedida para o papel:', decoded.role);
         next();
     } catch (error) {
         console.log('Token inválido:', error);
@@ -101,23 +99,20 @@ app.use('/api/v1/auth', createProxyMiddleware({
     pathRewrite: pathRewriteApiV1,
 }));
 
-app.use('/api/v1/courses', adminOrTeacherMiddleware, (req, res, next) => {
-    console.log(`[API Gateway] Proxy /api/v1/courses: ${req.method} ${req.originalUrl}`);
-    next();
-}, createProxyMiddleware({
+app.use('/api/v1/courses', adminOrTeacherMiddleware, createProxyMiddleware({
     target: SERVICE_REGISTRY.CATALOG_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
-app.use('/api/v1/lessons', createProxyMiddleware({
+app.use('/api/v1/lessons', adminOrTeacherMiddleware, createProxyMiddleware({
     target: SERVICE_REGISTRY.CONTENT_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
 
-app.use('/api/v1/live-sessions', createProxyMiddleware({
-    target: SERVICE_REGISTRY.CONTENT_SERVICE,
+app.use('/api/v1/live-sessions', adminOrTeacherMiddleware, createProxyMiddleware({
+    target: SERVICE_REGISTRY.CONTENT_SERVICE_LIVE_SESSIONS,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,
 }));
@@ -134,7 +129,7 @@ app.use('/api/v1/enrollments/:enrollmentId/payment', createProxyMiddleware({
     pathRewrite: pathRewriteApiV1,
 }));
 
-app.use('/api/v1/access-history', createProxyMiddleware({
+app.use('/api/v1/access-history',  createProxyMiddleware({
     target: SERVICE_REGISTRY.ENROLLMENT_SERVICE,
     changeOrigin: true,
     pathRewrite: pathRewriteApiV1,

@@ -14,7 +14,7 @@ services:
     container_name: service_catalogo_db
     restart: always
     env_file:
-      - ./servico-catalogo-cursos/.env
+      - ./servico-catalogo/.env
     ports:
       - "5433:5432"
 
@@ -23,7 +23,7 @@ services:
     container_name: service_conteudo_db
     restart: always
     env_file:
-      - ./servico-conteudo-aulas/.env
+      - ./servico-aulas/.env
     ports:
       - "5434:5432"
 
@@ -32,7 +32,7 @@ services:
     container_name: service_matriculas_db
     restart: always
     env_file:
-      - ./servico-matriculas/.env
+      - ./servico-matricula/.env
     ports:
       - "5435:5432"
 
@@ -41,6 +41,6 @@ services:
     container_name: service_atividades_db
     restart: always
     env_file:
-      - ./servico-atividades/.env
+      - ./servico-atividade/.env
     ports:
       - "5436:5432"
